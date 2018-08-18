@@ -297,15 +297,15 @@ public class Producer {
 
    1. 首先生产者一次打印从0-9条消息
 
-      ![image-20180819000057095](/var/folders/7g/t84y3f4n0g547kv07xlknwy40000gp/T/abnerworks.Typora/image-20180819000057095.png)
+      ![image-20180819000057095](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-3/Producter.png)
 
    2. 然后是消费者1:结果为打印偶数条消息(注:先启动的消费者为消费者1)
 
-      ![image-20180819000259211](/var/folders/7g/t84y3f4n0g547kv07xlknwy40000gp/T/abnerworks.Typora/image-20180819000259211.png)
+      ![image-20180819000259211](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-3/Consumer1-noQos.png)
 
    3. 消费者2:结果为打印奇数条消息
 
-      ![image-20180819000335579](/var/folders/7g/t84y3f4n0g547kv07xlknwy40000gp/T/abnerworks.Typora/image-20180819000335579.png)
+      ![image-20180819000335579](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-3/Consumer2-noQos.png)
 
    #### 结论: ####
 
@@ -323,10 +323,11 @@ public class Producer {
 
       增加如上代码,表示同一时刻服务器只会发送一条消息给消费者.消费者1和消费者2获取消息结果如下:
 
-      ![image-20180819001133009](/var/folders/7g/t84y3f4n0g547kv07xlknwy40000gp/T/abnerworks.Typora/image-20180819001133009.png)
+      ![image-20180819001133009](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-3/Consumer1-Qos.png)
 
-      ![image-20180819001145486](/var/folders/7g/t84y3f4n0g547kv07xlknwy40000gp/T/abnerworks.Typora/image-20180819001145486.png)
+      ![image-20180819001145486](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-3/Consumer2-noQos.png)
 
    5. 应用场景
 
       效率高的消费者消费消息多,可以用来进行负载均衡.
+
