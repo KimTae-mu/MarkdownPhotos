@@ -152,5 +152,181 @@ public class Producer {
 
 ***一个生产者对应多个消费者,但是只能有一个消费者获得消息!!!***
 
-竞争消费者模式.
+**竞争消费者模式.**
 
+1. 生产者
+
+   ```java
+   package org.alva.RabbitMQ.WorkModel;
+   
+   import com.rabbitmq.client.Channel;
+   import com.rabbitmq.client.Connection;
+   import org.alva.Utils.ConnectionUtil;
+   
+   import java.io.IOException;
+   import java.util.concurrent.TimeoutException;
+   
+   /**
+    * <一句话描述>,生产者
+    * <详细介绍>,Work模式下的生产者
+    *
+    */
+   public class Producter {
+       public static final String QUEUE_NAME = "work_queue";
+   
+       public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
+           //1.获取连接
+           Connection connection = ConnectionUtil.getConnection("localhost", 5672, "/", "guest", "guest");
+           //2.声明信道
+           Channel channel = connection.createChannel();
+           //3.声明(创建)队列
+           channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+           //4.定义消息内容,发布多条消息
+           for (int i = 0; i < 10; i++) {
+               String message = "hello rabbitmq " + i;
+               //5.发布消息
+               channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
+               System.out.println("[x] send message is '" + message + "'");
+               //6.模拟发送消息延时,便于展示多个消费者竞争接受消息
+               Thread.sleep(i * 10);
+           }
+           //7.关闭信道
+           channel.close();
+           //8.关闭连接
+           connection.close();
+       }
+   }
+   
+   ```
+
+2. 消费者
+
+   需要创建两个消费者.
+
+   消费者1:每接收一条消息后休眠10毫秒.
+
+   ```java
+   package org.alva.RabbitMQ.WorkModel;
+   
+   import com.rabbitmq.client.Channel;
+   import com.rabbitmq.client.Connection;
+   import com.rabbitmq.client.QueueingConsumer;
+   import org.alva.Utils.ConnectionUtil;
+   
+   import java.io.IOException;
+   import java.util.concurrent.TimeoutException;
+   
+   /**
+    * <一句话描述>,消费者
+    * <详细介绍>,Work模式下的消费者
+    *
+    */
+   public class Consumer1 {
+       public static final String QUEUE_NAME = "work_queue";
+   
+       public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
+           //1.获取连接
+           Connection connection = ConnectionUtil.getConnection("localhost", 5672, "/", "guest", "guest");
+           //2.声明通道
+           Channel channel = connection.createChannel();
+           //3.声明队列
+           channel.queueDeclare(QUEUE_NAME,false,false,false,null);
+           //同一时刻服务器只会发送一条消息给消费者
+   //        channel.basicQos(1);
+   
+           //4.定义队列的消费者
+           QueueingConsumer queueingConsumer = new QueueingConsumer(channel);
+           //5.监听队列,手动返回完成状态
+           channel.basicConsume(QUEUE_NAME,false,queueingConsumer);
+           //6.获取消息
+           while (true){
+               QueueingConsumer.Delivery delivery = queueingConsumer.nextDelivery();
+               String message = new String(delivery.getBody());
+               System.out.println("[x] received message : '"+message+"'");
+               //休眠10毫秒
+               Thread.sleep(10);
+               //返回确认状态
+               channel.basicAck(delivery.getEnvelope().getDeliveryTag(),false);
+           }
+       }
+   }
+   
+   ```
+
+   消费者2:每接收一条消息后休眠1000毫秒
+
+   ```java
+   package org.alva.RabbitMQ.WorkModel;
+   
+   import com.rabbitmq.client.Channel;
+   import com.rabbitmq.client.Connection;
+   import com.rabbitmq.client.QueueingConsumer;
+   import org.alva.Utils.ConnectionUtil;
+   
+   import java.io.IOException;
+   import java.util.concurrent.TimeoutException;
+   
+   /**
+    * <一句话描述>,
+    * <详细介绍>,
+    *
+    */
+   public class Consumer2 {
+       public static final String QUEUE_NAME = "work_queue";
+   
+       public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
+           Connection connection = ConnectionUtil.getConnection("localhost", 5672, "/", "guest", "guest");
+           Channel channel = connection.createChannel();
+           channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+   //        channel.basicQos(1);
+           QueueingConsumer queueingConsumer = new QueueingConsumer(channel);
+           channel.basicConsume(QUEUE_NAME,false,queueingConsumer);
+           while (true){
+               QueueingConsumer.Delivery delivery = queueingConsumer.nextDelivery();
+               String message = new String(delivery.getBody());
+               System.out.println("[x] received message : '" + message + "'");
+               Thread.sleep(1000);
+               channel.basicAck(delivery.getEnvelope().getDeliveryTag(),false);
+           }
+       }
+   }
+   
+   ```
+
+3. 测试结果
+
+   1. 首先生产者一次打印从0-9条消息
+
+      ![image-20180819000057095](/var/folders/7g/t84y3f4n0g547kv07xlknwy40000gp/T/abnerworks.Typora/image-20180819000057095.png)
+
+   2. 然后是消费者1:结果为打印偶数条消息(注:先启动的消费者为消费者1)
+
+      ![image-20180819000259211](/var/folders/7g/t84y3f4n0g547kv07xlknwy40000gp/T/abnerworks.Typora/image-20180819000259211.png)
+
+   3. 消费者2:结果为打印奇数条消息
+
+      ![image-20180819000335579](/var/folders/7g/t84y3f4n0g547kv07xlknwy40000gp/T/abnerworks.Typora/image-20180819000335579.png)
+
+   #### 结论: ####
+
+   ​	**消费者1和消费者2获取到的消息内容是不同的,也就是说同一个消息只能被一个消费者获取.*
+
+   ​	**消费者1和消费者2分别获取奇数条消息和偶数条消息,两种获取消息的条数是一样的.*
+
+   ​	前面我们说这种模式是竞争消费者模式,一条队列被多个消费者监听,这里两个消费者,其中消费者1和消费者2在获取消息后分别休眠了10毫秒和1000毫秒,也就是说两个消费者获取消息的效率是不一样的,但是结果却是两者获得的消息条数是一样的,这根本不构成竞争关系,那么我们应该怎么办才能让工作效率更高的消费者获取消息更多,也就是消费者1获取消息更多呢?
+
+   4. 能者多劳
+
+      ```java
+      channel.basicQos(1);
+      ```
+
+      增加如上代码,表示同一时刻服务器只会发送一条消息给消费者.消费者1和消费者2获取消息结果如下:
+
+      ![image-20180819001133009](/var/folders/7g/t84y3f4n0g547kv07xlknwy40000gp/T/abnerworks.Typora/image-20180819001133009.png)
+
+      ![image-20180819001145486](/var/folders/7g/t84y3f4n0g547kv07xlknwy40000gp/T/abnerworks.Typora/image-20180819001145486.png)
+
+   5. 应用场景
+
+      效率高的消费者消费消息多,可以用来进行负载均衡.
