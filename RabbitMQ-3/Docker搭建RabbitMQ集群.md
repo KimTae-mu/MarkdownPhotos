@@ -180,4 +180,4 @@
 
 [如何开启插件](https://www.cnblogs.com/Alva-mu/p/9487459.html)
 
-![RabbitMQ-Nodes](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-3/RabbitMQ-Nodes.png)
+![RabbitMQ-Nodes](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-3/image/RabbitMQ-Nodes.png)

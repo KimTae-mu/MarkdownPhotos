@@ -101,11 +101,11 @@
    docker search rabbitmq
    ```
 
-   ![image-docker-search-rabbitmq](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-1/docker-search.png)
+   ![image-docker-search-rabbitmq](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-1/image/docker-search.png)
 
    我们选择官方版本的,也就是第一个.*通过这个镜像创建的容器需要我们额外打开web management的插件,若不想手动开启,可下载 rabbitmq/management*
 
-   ![image-docker-search-rabbitmq/management](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-1/docker-search2.png)
+   ![image-docker-search-rabbitmq/management](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-1/image/docker-search2.png)
 
    ```shell
    docker pull rabbitmq
@@ -139,7 +139,7 @@
    docker logs my_rabbitmq
    ```
 
-   ![image-docker-logs-rabbitmq](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-1/docker-logs-rabbitmq.png)
+   ![image-docker-logs-rabbitmq](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-1/image/docker-logs-rabbitmq.png)
 
    
 
@@ -152,7 +152,7 @@
    ls
    ```
 
-   ![image-docker-rabbitmq-ls](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-1/rabbitmq-ls.png)
+   ![image-docker-rabbitmq-ls](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-1/image/rabbitmq-ls.png)
 
    可以看到有plugins插件的目录,我们需要用到的插件都在里面,使用命令即可开启插件.
 
@@ -163,11 +163,11 @@
    rabbitmq-plugins enable rabbitmq_management
    ```
 
-   ![image-enable-webmanagement](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-1/enable-webmanagement.png)
+   ![image-enable-webmanagement](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-1/image/enable-webmanagement.png)
 
 6. 这样,我们在本地就可以打开浏览器访问[localhost:15672](http://localhost:15672),便可以看到RabbitMQ的页面了.其中用户名和密码都是guest.
 
-![image-localhost-15672](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-1/localhost-15672.png)
+![image-localhost-15672](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-1/image/localhost-15672.png)
 
 
 
