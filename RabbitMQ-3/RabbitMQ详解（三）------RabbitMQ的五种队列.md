@@ -680,8 +680,162 @@ public class Producer {
 1. 生产者
 
    ```java
+   package org.alva.RabbitMQ.TopicExchange;
+   
+   import com.rabbitmq.client.Channel;
+   import com.rabbitmq.client.Connection;
+   import org.alva.Utils.ConnectionUtil;
+   
+   import java.io.IOException;
+   import java.util.concurrent.TimeoutException;
+   
+   /**
+    * <一句话描述>,主题模式下的生产者
+    * <详细介绍>,
+    *
+    */
+   public class Producer {
+       private final static String EXCHANGE_NAME = "topic_exchange";
+   
+       public static void main(String[] args) throws IOException, TimeoutException {
+           //1.获取连接
+           Connection connection = ConnectionUtil.getConnection("localhost", 5674, "/", "guest", "guest");
+           //2.声明信道
+           Channel channel = connection.createChannel();
+           //3.声明交换器,类型为direct
+           channel.exchangeDeclare(EXCHANGE_NAME, "topic");
+           //4.定义消息内容
+           String message = "hello rabbitmq";
+           //5.发布消息
+           channel.basicPublish(EXCHANGE_NAME, "update.Name", null, message.getBytes());
+           System.out.println("[x] send'" + message + "'");
+           //6.关闭通道和连接
+           channel.close();
+           connection.close();
+   
+       }
+   }
    
    ```
 
-   
+2. 消费者1
 
+   ```java
+   package org.alva.RabbitMQ.TopicExchange;
+   
+   import com.rabbitmq.client.Channel;
+   import com.rabbitmq.client.Connection;
+   import com.rabbitmq.client.QueueingConsumer;
+   import org.alva.Utils.ConnectionUtil;
+   
+   import java.io.IOException;
+   import java.util.concurrent.TimeoutException;
+   
+   /**
+    * <一句话描述>,消费者
+    * <详细介绍>,主题模式下的消费者1
+    *
+    */
+   public class Consumer1 {
+       public static final String QUEUE_NAME = "topic_queue_1";
+   
+       public static final String EXCHANGE_NAME = "topic_exchange";
+   
+       public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
+           //1.获取连接
+           Connection connection = ConnectionUtil.getConnection("localhost", 5673, "/", "guest", "guest");
+           //2.声明信道
+           Channel channel = connection.createChannel();
+           //3.声明队列
+           channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+           //4.绑定队列到交换器,指定路由key为update
+           channel.queueBind(QUEUE_NAME, EXCHANGE_NAME, "update.#");
+           //同一时刻服务器只会发送一条消息给消费者
+           channel.basicQos(1);
+   
+           //5.定义队列的消费者
+           QueueingConsumer queueingConsumer = new QueueingConsumer(channel);
+           //5.监听队列,手动返回完成状态
+           channel.basicConsume(QUEUE_NAME, false, queueingConsumer);
+           //6.获取消息
+           while (true) {
+               QueueingConsumer.Delivery delivery = queueingConsumer.nextDelivery();
+               String message = new String(delivery.getBody());
+               System.out.println("[消费者1] received message : '" + message + "'");
+               //休眠10毫秒
+               Thread.sleep(10);
+               //返回确认状态
+               channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+           }
+       }
+   }
+   
+   ```
+
+3. 消费者2
+
+   ```java
+   package org.alva.RabbitMQ.TopicExchange;
+   
+   import com.rabbitmq.client.Channel;
+   import com.rabbitmq.client.Connection;
+   import com.rabbitmq.client.QueueingConsumer;
+   import org.alva.Utils.ConnectionUtil;
+   
+   import java.io.IOException;
+   import java.util.concurrent.TimeoutException;
+   
+   /**
+    * <一句话描述>,消费者
+    * <详细介绍>,主题模式下的消费者2
+    *
+    * @author 穆国超
+    * @since 设计wiki | 需求wiki
+    */
+   public class Consumer2 {
+       public static final String QUEUE_NAME = "topic_queue_2";
+   
+       public static final String EXCHANGE_NAME = "topic_exchange";
+   
+       public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
+           //1.获取连接
+           Connection connection = ConnectionUtil.getConnection("localhost", 5672, "/", "guest", "guest");
+           //2.声明信道
+           Channel channel = connection.createChannel();
+           //3.声明队列
+           channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+           //4.绑定队列到交换器,指定路由key为select
+           channel.queueBind(QUEUE_NAME, EXCHANGE_NAME, "select.#");
+           //同一时刻服务器只会发送一条消息给消费者
+           channel.basicQos(1);
+   
+           //5.定义队列的消费者
+           QueueingConsumer queueingConsumer = new QueueingConsumer(channel);
+           //5.监听队列,手动返回完成状态
+           channel.basicConsume(QUEUE_NAME, false, queueingConsumer);
+           //6.获取消息
+           while (true) {
+               QueueingConsumer.Delivery delivery = queueingConsumer.nextDelivery();
+               String message = new String(delivery.getBody());
+               System.out.println("[消费者1] received message : '" + message + "'");
+               //休眠10毫秒
+               Thread.sleep(1000);
+               //返回确认状态
+               channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+           }
+       }
+   }
+   
+   ```
+
+4. 分析结果
+
+   生产者发送消息绑定的路由key为**update.Name**;消费者1监听的队列和交换器绑定路由key为**update.#**;消费者2监听的队列和交换器绑定路由key为**select.#**.
+
+   很显然,消费者1会接收到消息,而消费者2接收不到
+
+![image-20180902151433116](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-3/image/Topic-Producter.png)
+
+![image-20180902151448651](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-3/image/Topic-Consumer1.png)
+
+![image-20180902151458185](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-3/image/Topic-Consumer2.png)
