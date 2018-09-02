@@ -834,8 +834,32 @@ public class Producer {
 
    很显然,消费者1会接收到消息,而消费者2接收不到
 
-![image-20180902151433116](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-3/image/Topic-Producter.png)
+   ![image-20180902151433116](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-3/image/Topic-Producter.png)
 
-![image-20180902151448651](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-3/image/Topic-Consumer1.png)
+   ![image-20180902151448651](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-3/image/Topic-Consumer1.png)
 
-![image-20180902151458185](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-3/image/Topic-Consumer2.png)
+   ![image-20180902151458185](https://raw.githubusercontent.com/KimTae-mu/MarkdownPhotos/master/RabbitMQ-3/image/Topic-Consumer2.png)
+
+### 6.四种交换器 ###
+
+​	前面介绍了五种队列模式,但是实际上只有三种,第一种简单队列,第二种工作模式,剩下的三种都是和交换器绑定的合起来称为一种,这节详细介绍交换器.
+
+​	交换器分为四种,分别是:direct,fanout,topic和headers.
+
+​	前三种分别对应路由模式,发布订阅模式和通配符模式,headers交换器允许匹配AMQP消息的header而非路由键,除此之外,header交换器和direct交换器完全一致,但是性能却差很多,因此基本上不会用到该交换器,这不做详细介绍.
+
+1. ***direct***
+
+   如果路由键完全匹配的话,消息才会被投放到相应的队列.
+
+2. ***fanout***
+
+   当发送一条消息到fanout交换器上时,它会把消息投放到所有附加在此交换器的上的队列.
+
+3. ***topic***
+
+   设置模糊的绑定方式,"*"操作符将"."视为分隔符,匹配单个字符;"#"操作符没有分块的概念,它将任意"."均视为关键字的匹配部分,能够匹配多个字符.
+
+### 7.总结 ###
+
+​	关于RabbitMQ的五种队列,其实实际使用最多的是最后一种主题模式,通过模糊匹配,使得操作更加自如.
